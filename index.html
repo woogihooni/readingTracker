@@ -118,15 +118,15 @@
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4 box-border max-h-[90vh] overflow-y-auto">
             <h3 id="recordModalTitle" class="text-lg font-bold text-gray-800">독서 기록 추가</h3>
             <input type="hidden" id="editRecordId">
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">대상 도서 (읽는 중인 책)</label>
-                <select id="recordBookSelect" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <select id="recordBookSelect" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                     <!-- 동적 생성 -->
                 </select>
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">날짜</label>
-                <input type="date" id="recordDateInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="date" id="recordDateInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="flex space-x-2">
                 <div class="flex-1">
