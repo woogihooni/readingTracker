@@ -4,790 +4,625 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>미니멀 독서 기록 앱</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font & FontAwesome for icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     </style>
 </head>
-<body class="flex flex-col min-h-screen max-w-md mx-auto bg-white shadow-xl relative pb-20">
+<body class="bg-gray-50 text-gray-800 pb-20">
 
-    <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+    <!-- 상단 헤더 -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
+        <h1 class="text-lg font-bold text-indigo-600"><i class="fa-solid fa-book-open mr-2"></i>독서 기록장</h1>
         <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-indigo-200">
-                <i class="fa-solid fa-book-open text-sm"></i>
-            </div>
-            <h1 class="text-lg font-bold tracking-tight text-slate-800">독서기록</h1>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 active:scale-95">
-                <i class="fa-solid fa-download"></i> CSV 백업
+            <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-200 active:bg-emerald-100">
+                <i class="fa-solid fa-file-csv mr-1"></i>CSV 백업
             </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-4">
-        <div class="flex bg-slate-100 p-1 rounded-xl mb-4">
-            <button id="tabListBtn" onclick="switchView('list')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition-all">
-                <i class="fa-solid fa-list-ul mr-1"></i> 도서 및 기록 목록
-            </button>
-            <button id="tabCalendarBtn" onclick="switchView('calendar')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all">
-                <i class="fa-solid fa-calendar-days mr-1"></i> 독서 달력
-            </button>
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="max-w-md mx-auto p-4">
+        
+        <!-- 뷰 전환 탭 (목록 / 달력) -->
+        <div class="flex bg-gray-200 p-1 rounded-xl mb-4">
+            <button id="tabListBtn" onclick="switchView('list')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition">도서 및 기록 목록</button>
+            <button id="tabCalendarBtn" onclick="switchView('calendar')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 transition">캘린더 뷰</button>
         </div>
 
-        <!-- 1. 목록 뷰 섹션 -->
+        <!-- [뷰 1] 도서 및 기록 목록 -->
         <div id="listView" class="space-y-4">
-            <div class="flex items-center justify-between">
-                <div class="flex space-x-1 bg-slate-50 p-0.5 rounded-lg border border-slate-100">
-                    <button onclick="filterBooks('all')" id="filterAll" class="px-3 py-1 text-xs font-medium rounded-md bg-indigo-50 text-indigo-600">전체</button>
-                    <button onclick="filterBooks('reading')" id="filterReading" class="px-3 py-1 text-xs font-medium rounded-md text-slate-500">읽는 중</button>
-                    <button onclick="filterBooks('completed')" id="filterCompleted" class="px-3 py-1 text-xs font-medium rounded-md text-slate-500">완독</button>
-                </div>
-                <button onclick="openBookModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg shadow-sm shadow-indigo-200 transition-all flex items-center gap-1">
-                    <i class="fa-solid fa-plus"></i> 새 책 등록
-                </button>
+            <!-- 상태 필터 -->
+            <div class="flex space-x-2 border-b border-gray-200 pb-2">
+                <button onclick="filterBooks('all')" id="filterAll" class="text-xs px-3 py-1.5 rounded-full font-medium bg-indigo-600 text-white">전체</button>
+                <button onclick="filterBooks('reading')" id="filterReading" class="text-xs px-3 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">읽는 중</button>
+                <button onclick="filterBooks('completed')" id="filterCompleted" class="text-xs px-3 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">완독</button>
             </div>
 
-            <!-- 책 리스트 컨테이너 -->
+            <!-- 도서 카드 리스트 -->
             <div id="bookListContainer" class="space-y-3">
-                <!-- Javascript로 동적 렌더링 -->
+                <!-- 동적 생성 -->
             </div>
         </div>
 
-        <!-- 1-1. 도서 상세 및 편집 뷰 섹션 -->
-        <div id="bookDetailView" class="hidden space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <button onclick="backToListFromDetail()" class="text-xs text-slate-600 font-semibold hover:text-slate-800 flex items-center gap-1">
-                    <i class="fa-solid fa-arrow-left"></i> 목록으로 돌아가기
-                </button>
-                <h2 class="text-xs font-bold text-indigo-600">도서 상세 및 편집</h2>
-            </div>
-            
-            <!-- 도서 정보 수정 폼 -->
-            <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm space-y-3">
-                <h3 class="text-xs font-bold text-slate-800 mb-2">도서 정보 수정</h3>
-                <form id="editBookForm" onsubmit="handleEditBookSubmit(event)" class="space-y-3">
-                    <input type="hidden" id="editBookId">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">책 제목</label>
-                        <input type="text" id="editBookTitleInput" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">저자</label>
-                        <input type="text" id="editBookAuthorInput" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">독서 상태</label>
-                        <select id="editBookStatusInput" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                            <option value="reading">읽는 중</option>
-                            <option value="completed">완독</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end pt-1">
-                        <button type="submit" class="px-4 py-2 text-xs font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">수정 저장</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 해당 도서의 독서 기록 목록 -->
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                <h3 class="text-xs font-bold text-slate-700 mb-2">이 책의 독서 기록 내역</h3>
-                <div id="bookDetailLogsContainer" class="space-y-2">
-                    <!-- Javascript로 동적 렌더링 -->
-                </div>
-            </div>
-        </div>
-
+        <!-- [뷰 2] 캘린더 뷰 -->
         <div id="calendarView" class="hidden space-y-4">
-            <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <button onclick="changeDateMonth(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                    <h2 id="calendarTitle" class="text-sm font-bold text-slate-800 w-32 text-center">2026년 10월</h2>
-                    <button onclick="changeDateMonth(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <!-- 월/주간 전환 및 월 이동 -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                        <h2 id="calendarTitle" class="text-base font-bold text-gray-800">2026년 10월</h2>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                    </div>
+                    <div class="flex bg-gray-100 p-1 rounded-lg">
+                        <button onclick="setCalendarMode('month')" id="modeMonthBtn" class="text-xs px-2.5 py-1 rounded-md font-medium bg-white text-indigo-600 shadow-sm">월간</button>
+                        <button onclick="setCalendarMode('week')" id="modeWeekBtn" class="text-xs px-2.5 py-1 rounded-md font-medium text-gray-600">주간</button>
+                    </div>
                 </div>
-                <div class="flex bg-white border border-slate-200 p-0.5 rounded-lg text-xs">
-                    <button onclick="setCalendarMode('month')" id="modeMonthBtn" class="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium">월간</button>
-                    <button onclick="setCalendarMode('week')" id="modeWeekBtn" class="px-2.5 py-1 rounded-md text-slate-600 font-medium">주간</button>
+
+                <!-- 캘린더 그리드 -->
+                <div id="calendarGrid">
+                    <!-- 동적 생성 -->
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-100 rounded-xl p-3 shadow-sm">
-                <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2">
-                    <span class="text-red-500">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="text-blue-500">토</span>
-                </div>
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1">
-                    <!-- Javascript로 동적 렌더링 -->
-                </div>
-            </div>
-
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 id="selectedDateTitle" class="text-xs font-bold text-slate-700">날짜를 선택하세요</h3>
-                    <button onclick="openLogModal()" class="text-xs text-indigo-600 font-semibold hover:underline flex items-center gap-1">
-                        <i class="fa-solid fa-plus-circle"></i> 기록 추가
-                    </button>
-                </div>
+            <!-- 선택한 날짜의 독서 기록 요약 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h3 id="selectedDateTitle" class="text-sm font-bold text-gray-700 mb-3">날짜를 선택하세요</h3>
                 <div id="selectedDateLogs" class="space-y-2">
-                    <p class="text-xs text-slate-400 py-2 text-center">해당 날짜에 기록된 독서 내용이 없습니다.</p>
+                    <p class="text-xs text-gray-400">기록이 없습니다.</p>
                 </div>
             </div>
         </div>
+
     </main>
 
-    <!-- Floating Action Button -->
-    <div class="absolute bottom-4 right-4 z-10">
-        <button onclick="openLogModal()" class="w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg shadow-indigo-300 flex items-center justify-center text-lg transition-transform active:scale-95">
-            <i class="fa-solid fa-pen"></i>
+    <!-- 플로팅 액션 버튼 (독서 기록 추가 버튼) -->
+    <div class="fixed bottom-6 right-6 z-20">
+        <button onclick="openRecordModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl transition active:scale-95">
+            <i class="fa-solid fa-plus"></i>
         </button>
     </div>
 
-    <!-- 도서 추가 모달 -->
-    <div id="bookModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800 text-sm">새 책 등록하기</h3>
-                <button onclick="closeBookModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- [모달] 도서 추가/수정 -->
+    <div id="bookModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
+            <h3 id="bookModalTitle" class="text-base font-bold text-gray-800">새 도서 등록</h3>
+            <input type="hidden" id="editBookId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">책 제목</label>
+                <input type="text" id="bookTitleInput" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 어린왕자">
             </div>
-            <form id="bookForm" onsubmit="handleBookSubmit(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">책 제목</label>
-                    <input type="text" id="bookTitleInput" required placeholder="예: 어린왕자" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">저자</label>
-                    <input type="text" id="bookAuthorInput" required placeholder="예: 생텍쥐페리" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">독서 상태</label>
-                    <select id="bookStatusInput" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                        <option value="reading">읽는 중</option>
-                        <option value="completed">완독</option>
-                    </select>
-                </div>
-                <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="closeBookModal()" class="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">취소</button>
-                    <button type="submit" class="flex-1 py-2 text-xs font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">저장</button>
-                </div>
-            </form>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">저자</label>
+                <input type="text" id="bookAuthorInput" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 생텍쥐페리">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">독서 상태</label>
+                <select id="bookStatusInput" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <option value="reading">읽는 중</option>
+                    <option value="completed">완독</option>
+                </select>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeBookModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-semibold">취소</button>
+                <button onclick="saveBook()" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold">저장</button>
+            </div>
         </div>
     </div>
 
-    <div id="logModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800 text-sm">일일 독서량 기록</h3>
-                <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- [모달] 독서 기록 추가/수정 (날짜 오버플로우 보정 적용 완료) -->
+    <div id="recordModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
+            <h3 id="recordModalTitle" class="text-base font-bold text-gray-800">독서 기록 추가</h3>
+            <input type="hidden" id="editRecordId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">대상 도서 (읽는 중인 책)</label>
+                <select id="recordBookSelect" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <!-- 동적 생성 -->
+                </select>
             </div>
-            <form id="logForm" onsubmit="handleLogSubmit(event)" class="space-y-3">
-                <input type="hidden" id="logEditId">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">날짜 선택</label>
-                    <input type="date" id="logDateInput" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">날짜</label>
+                <input type="date" id="recordDateInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="flex space-x-2">
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">시작 페이지</label>
+                    <input type="number" id="recordStartPageInput" oninput="calculatePages()" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="시작">
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">대상 도서</label>
-                    <select id="logBookSelect" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                        <!-- 동적 옵션 주입 -->
-                    </select>
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">끝 페이지</label>
+                    <input type="number" id="recordEndPageInput" oninput="calculatePages()" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="끝">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">시작 페이지</label>
-                        <input type="number" id="logStartPageInput" min="1" required oninput="calculatePages()" placeholder="예: 1" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">끝 페이지</label>
-                        <input type="number" id="logEndPageInput" min="1" required oninput="calculatePages()" placeholder="예: 30" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                    </div>
-                </div>
-                <div class="bg-indigo-50/60 p-2.5 rounded-xl flex items-center justify-between">
-                    <span class="text-xs text-indigo-700 font-medium">자동 계산된 읽은 페이지:</span>
-                    <span id="calculatedPagesDisplay" class="text-xs font-bold text-indigo-600">0쪽</span>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">한 줄 메모 (선택)</label>
-                    <input type="text" id="logMemoInput" placeholder="예: 주인공의 대사가 인상 깊었음" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 bg-slate-50">
-                </div>
-                <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="closeLogModal()" class="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">취소</button>
-                    <button type="submit" class="flex-1 py-2 text-xs font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">기록하기</button>
-                </div>
-            </form>
+            </div>
+            <div class="bg-indigo-50 p-2.5 rounded-xl text-center">
+                <span class="text-xs text-indigo-600 font-medium">총 읽은 페이지: <strong id="calculatedPages" class="text-sm font-bold">0</strong> 페이지</span>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">메모 (선택)</label>
+                <input type="text" id="recordMemoInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="간단한 소감이나 메모">
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeRecordModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-semibold">취소</button>
+                <button onclick="saveRecord()" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [뷰 3] 도서 상세/편집 화면 -->
+    <div id="detailView" class="hidden space-y-4">
+        <button onclick="switchView('list')" class="text-xs font-semibold text-indigo-600 flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> 목록으로 돌아가기</button>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+            <h3 class="text-base font-bold text-gray-800"><i class="fa-solid fa-book mr-2 text-indigo-500"></i>도서 정보 상세 및 수정</h3>
+            <input type="hidden" id="detailBookId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">책 제목</label>
+                <input type="text" id="detailTitleInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">저자</label>
+                <input type="text" id="detailAuthorInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">독서 상태</label>
+                <select id="detailStatusInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    <option value="reading">읽는 중</option>
+                    <option value="completed">완독</option>
+                </select>
+            </div>
+            <button onclick="updateBookDetail()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold">도서 정보 수정 저장</button>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+            <h4 class="text-sm font-bold text-gray-800">이 책의 독서 기록 내역</h4>
+            <div id="detailRecordList" class="space-y-2">
+                <!-- 동적 생성 -->
+            </div>
         </div>
     </div>
 
     <script>
+        // 데이터 구조 초기화
         let books = JSON.parse(localStorage.getItem('reading_books')) || [
             { id: '1', title: '어린왕자', author: '생텍쥐페리', status: 'reading' },
             { id: '2', title: '데미안', author: '헤르만 헤세', status: 'completed' }
         ];
 
-        let logs = JSON.parse(localStorage.getItem('reading_logs')) || [
-            { id: '101', date: '2026-10-01', bookId: '1', startPage: 1, endPage: 25, pages: 25, memo: '처음 시작' },
-            { id: '102', date: '2026-09-28', bookId: '2', startPage: 1, endPage: 100, pages: 100, memo: '초반부' },
-            { id: '103', date: '2026-09-30', bookId: '2', startPage: 101, endPage: 250, pages: 150, memo: '완독' }
+        let records = JSON.parse(localStorage.getItem('reading_records')) || [
+            { id: 'r1', bookId: '1', date: '2026-10-01', startPage: 1, endPage: 15, pages: 15, memo: '처음 시작!' },
+            { id: 'r2', bookId: '2', date: '2026-09-28', startPage: 1, endPage: 50, pages: 50, memo: '명작이다.' },
+            { id: 'r3', bookId: '2', date: '2026-09-30', startPage: 51, endPage: 120, pages: 70, memo: '완독 완료.' }
         ];
 
         let currentFilter = 'all';
         let currentView = 'list';
         let calendarMode = 'month';
         let currentDate = new Date();
-        let selectedDateStr = getFormattedDate(new Date());
 
         function saveData() {
             localStorage.setItem('reading_books', JSON.stringify(books));
-            localStorage.setItem('reading_logs', JSON.stringify(logs));
+            localStorage.setItem('reading_records', JSON.stringify(records));
         }
 
-        function getFormattedDate(d) {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        // YY-MM-DD 형식으로 변환하는 함수
-        function formatShortDate(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            const yy = parts[0].slice(2);
-            return `${yy}-${parts[1]}-${parts[2]}`;
-        }
-
-        window.onload = function() {
-            renderBooks();
-            renderCalendar();
-            selectDate(selectedDateStr);
-            document.getElementById('logDateInput').value = selectedDateStr;
-        };
-
-        function switchView(view) {
-            currentView = view;
-            const listBtn = document.getElementById('tabListBtn');
-            const calBtn = document.getElementById('tabCalendarBtn');
-            const listView = document.getElementById('listView');
-            const detailView = document.getElementById('bookDetailView');
-            const calView = document.getElementById('calendarView');
-
-            detailView.classList.add('hidden');
-
-            if(view === 'list') {
-                listBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition-all";
-                calBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all";
-                listView.classList.remove('hidden');
-                calView.classList.add('hidden');
-                renderBooks();
-            } else {
-                calBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition-all";
-                listBtn.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all";
-                calView.classList.remove('hidden');
-                listView.classList.add('hidden');
-                renderCalendar();
-                selectDate(selectedDateStr);
-            }
-        }
-
-        function openBookDetailView(bookId) {
-            const book = books.find(b => b.id === bookId);
-            if(!book) return;
-
+        function switchView(viewName) {
+            currentView = viewName;
             document.getElementById('listView').classList.add('hidden');
             document.getElementById('calendarView').classList.add('hidden');
-            document.getElementById('bookDetailView').classList.remove('hidden');
+            document.getElementById('detailView').classList.add('hidden');
 
-            document.getElementById('tabListBtn').className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all";
-            document.getElementById('tabCalendarBtn').className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all";
+            document.getElementById('tabListBtn').className = "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 transition";
+            document.getElementById('tabCalendarBtn').className = "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-600 transition";
 
-            document.getElementById('editBookId').value = book.id;
-            document.getElementById('editBookTitleInput').value = book.title;
-            document.getElementById('editBookAuthorInput').value = book.author;
-            document.getElementById('editBookStatusInput').value = book.status;
-
-            renderBookDetailLogs(bookId);
-        }
-
-        function backToListFromDetail() {
-            document.getElementById('bookDetailView').classList.add('hidden');
-            switchView('list');
-        }
-
-        function handleEditBookSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('editBookId').value;
-            const title = document.getElementById('editBookTitleInput').value.trim();
-            const author = document.getElementById('editBookAuthorInput').value.trim();
-            const status = document.getElementById('editBookStatusInput').value;
-
-            const book = books.find(b => b.id === id);
-            if(book) {
-                book.title = title;
-                book.author = author;
-                book.status = status;
-                saveData();
-                alert('도서 정보가 수정되었습니다.');
-                renderBooks();
-                renderBookDetailLogs(id);
+            if (viewName === 'list') {
+                document.getElementById('listView').classList.remove('hidden');
+                document.getElementById('tabListBtn').className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition";
+                renderBookList();
+            } else if (viewName === 'calendar') {
+                document.getElementById('calendarView').classList.remove('hidden');
+                document.getElementById('tabCalendarBtn').className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-indigo-600 shadow-sm transition";
+                renderCalendar();
+            } else if (viewName === 'detail') {
+                document.getElementById('detailView').classList.remove('hidden');
             }
         }
 
-        function renderBookDetailLogs(bookId) {
-            const container = document.getElementById('bookDetailLogsContainer');
-            container.innerHTML = '';
-
-            const bookLogs = logs.filter(l => l.bookId === bookId);
-            if(bookLogs.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">이 책에 대한 독서 기록이 아직 없습니다.</p>`;
-                return;
-            }
-
-            bookLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = "bg-white border border-slate-100 p-2.5 rounded-xl flex items-center justify-between shadow-sm";
-                item.innerHTML = `
-                    <div class="space-y-0.5">
-                        <h4 class="text-xs font-bold text-slate-800">${log.date} - <span class="text-indigo-600 font-semibold">${log.startPage}~${log.endPage}쪽 (${log.pages}쪽)</span></h4>
-                        ${log.memo ? `<p class="text-[11px] text-slate-500 italic">"${escapeHtml(log.memo)}"</p>` : ''}
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="openLogModalForEdit('${log.id}')" class="text-indigo-500 hover:text-indigo-700 text-xs px-2 py-1"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteLogFromDetail('${log.id}', '${bookId}')" class="text-rose-400 hover:text-rose-600 text-xs px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        function deleteLogFromDetail(logId, bookId) {
-            if(confirm('이 기록을 삭제하시겠습니까?')) {
-                logs = logs.filter(l => l.id !== logId);
-                saveData();
-                renderBookDetailLogs(bookId);
-            }
-        }
-
+        // 도서 목록 렌더링
         function filterBooks(status) {
             currentFilter = status;
             ['all', 'reading', 'completed'].forEach(s => {
                 const btn = document.getElementById(`filter${s.charAt(0).toUpperCase() + s.slice(1)}`);
                 if(s === status) {
-                    btn.className = "px-3 py-1 text-xs font-medium rounded-md bg-indigo-50 text-indigo-600";
+                    btn.className = "text-xs px-3 py-1.5 rounded-full font-medium bg-indigo-600 text-white";
                 } else {
-                    btn.className = "px-3 py-1 text-xs font-medium rounded-md text-slate-500";
+                    btn.className = "text-xs px-3 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600";
                 }
             });
-            renderBooks();
+            renderBookList();
         }
 
-        function renderBooks() {
+        function renderBookList() {
             const container = document.getElementById('bookListContainer');
             container.innerHTML = '';
 
-            let filtered = books;
-            if(currentFilter !== 'all') {
-                filtered = books.filter(b => b.status === currentFilter);
-            }
+            const filtered = books.filter(b => currentFilter === 'all' || b.status === currentFilter);
 
             if(filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">등록된 책이 없습니다.</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-gray-400 text-xs">등록된 도서가 없습니다.</div>`;
                 return;
             }
 
             filtered.forEach(book => {
-                const bookLogs = logs.filter(l => l.bookId === book.id);
-                const totalPages = bookLogs.reduce((sum, l) => sum + Number(l.pages), 0);
-
-                // 날짜 포맷 계산 (시작일, 종료일)
-                let dateStrPart = '';
-                if (bookLogs.length > 0) {
-                    // 날짜 순으로 정렬
-                    const sortedLogs = [...bookLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
-                    const firstDate = formatShortDate(sortedLogs[0].date);
-                    const lastDate = formatShortDate(sortedLogs[sortedLogs.length - 1].date);
-
-                    if (book.status === 'completed') {
-                        dateStrPart = ` <span class="text-slate-400 font-normal">(${firstDate}~${lastDate})</span>`;
+                const bookRecords = records.filter(r => r.bookId === book.id).sort((a,b) => new Date(a.date) - new Date(b.date));
+                let dateStr = '';
+                if(bookRecords.length > 0) {
+                    const start = bookRecords[0].date.replace(/^\d{2}/, '');
+                    const end = bookRecords[bookRecords.length - 1].date.replace(/^\d{2}/, '');
+                    if(book.status === 'completed') {
+                        dateStr = `(${start}~${end})`;
                     } else {
-                        dateStrPart = ` <span class="text-slate-400 font-normal">(${firstDate})</span>`;
+                        dateStr = `(${start})`;
                     }
                 }
 
+                const totalPages = bookRecords.reduce((sum, r) => sum + (parseInt(r.pages) || 0), 0);
+
                 const card = document.createElement('div');
-                card.className = "bg-white border border-slate-100 rounded-xl p-3.5 shadow-sm flex items-center justify-between";
+                card.className = "bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between";
                 card.innerHTML = `
-                    <div class="space-y-1">
+                    <div class="flex-1 cursor-pointer" onclick="openDetailView('${book.id}')">
                         <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md ${book.status === 'reading' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}">
-                                ${book.status === 'reading' ? '읽는 중' : '완독'}
-                            </span>
-                            <h4 onclick="openBookDetailView('${book.id}')" class="text-xs font-bold text-slate-800 cursor-pointer hover:text-indigo-600 hover:underline transition-colors">${escapeHtml(book.title)}${dateStrPart}</h4>
+                            <span class="text-sm font-bold text-gray-800">${book.title} <span class="text-xs font-normal text-gray-500">${dateStr}</span></span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${book.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}">${book.status === 'completed' ? '완독' : '읽는 중'}</span>
                         </div>
-                        <p class="text-[11px] text-slate-500">저자: ${escapeHtml(book.author)} | 누적 읽은 페이지: <span class="font-semibold text-indigo-600">${totalPages}쪽</span></p>
+                        <p class="text-xs text-gray-400 mt-1">${book.author} | 누적 ${totalPages}페이지</p>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <button onclick="toggleBookStatus('${book.id}')" title="상태 변경" class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center text-xs"><i class="fa-solid fa-rotate"></i></button>
-                        <button onclick="deleteBook('${book.id}')" title="삭제" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 flex items-center justify-center text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="toggleBookStatus('${book.id}')" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center hover:bg-gray-100" title="상태 전환"><i class="fa-solid fa-rotate text-xs"></i></button>
+                        <button onclick="deleteBook('${book.id}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function openBookModal() {
-            document.getElementById('bookModal').classList.remove('hidden');
-            document.getElementById('bookTitleInput').value = '';
-            document.getElementById('bookAuthorInput').value = '';
-        }
-
-        function closeBookModal() {
-            document.getElementById('bookModal').classList.add('hidden');
-        }
-
-        function handleBookSubmit(e) {
-            e.preventDefault();
-            const title = document.getElementById('bookTitleInput').value.trim();
-            const author = document.getElementById('bookAuthorInput').value.trim();
-            const status = document.getElementById('bookStatusInput').value;
-
-            const newBook = {
-                id: Date.now().toString(),
-                title,
-                author,
-                status
-            };
-
-            books.push(newBook);
-            saveData();
-            closeBookModal();
-            renderBooks();
-        }
-
         function toggleBookStatus(id) {
             const book = books.find(b => b.id === id);
             if(book) {
-                // 명확하게 현재 상태의 반대로 토글
                 book.status = book.status === 'reading' ? 'completed' : 'reading';
                 saveData();
-                renderBooks();
+                renderBookList();
             }
         }
 
         function deleteBook(id) {
-            if(confirm('이 책과 관련된 모든 독서 기록이 함께 삭제됩니다. 삭제하시겠습니까?')) {
+            if(confirm('정말 삭제하시겠습니까? 연관된 기록도 함께 삭제됩니다.')) {
                 books = books.filter(b => b.id !== id);
-                logs = logs.filter(l => l.bookId !== id);
+                records = records.filter(r => r.bookId !== id);
                 saveData();
-                renderBooks();
-                renderCalendar();
+                renderBookList();
             }
         }
 
-        function setCalendarMode(mode) {
-            calendarMode = mode;
-            const monthBtn = document.getElementById('modeMonthBtn');
-            const weekBtn = document.getElementById('modeWeekBtn');
-            if(mode === 'month') {
-                monthBtn.className = "px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium";
-                weekBtn.className = "px-2.5 py-1 rounded-md text-slate-600 font-medium";
-            } else {
-                weekBtn.className = "px-2.5 py-1 rounded-md bg-indigo-600 text-white font-medium";
-                monthBtn.className = "px-2.5 py-1 rounded-md text-slate-600 font-medium";
-            }
-            renderCalendar();
+        // 도서 상세/편집 뷰
+        function openDetailView(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if(!book) return;
+
+            document.getElementById('detailBookId').value = book.id;
+            document.getElementById('detailTitleInput').value = book.title;
+            document.getElementById('detailAuthorInput').value = book.author;
+            document.getElementById('detailStatusInput').value = book.status;
+
+            renderDetailRecords(bookId);
+            switchView('detail');
         }
 
-        function changeDateMonth(direction) {
-            if(calendarMode === 'month') {
-                currentDate.setMonth(currentDate.getMonth() + direction);
-            } else {
-                currentDate.setDate(currentDate.getDate() + (direction * 7));
-            }
-            renderCalendar();
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const titleElem = document.getElementById('calendarTitle');
-            grid.innerHTML = '';
-
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-
-            if(calendarMode === 'month') {
-                titleElem.innerText = `${year}년 ${month + 1}월`;
-
-                const firstDayIndex = new Date(year, month, 1).getDay();
-                const totalDays = new Date(year, month + 1, 0).getDate();
-
-                for(let i = 0; i < firstDayIndex; i++) {
-                    const emptyCell = document.createElement('div');
-                    emptyCell.className = "h-16 bg-slate-50/50 rounded-lg opacity-30";
-                    grid.appendChild(emptyCell);
-                }
-
-                for(let day = 1; day <= totalDays; day++) {
-                    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dayLogs = logs.filter(l => l.date === dStr);
-
-                    const cell = document.createElement('div');
-                    cell.className = `h-16 p-1 border border-slate-100 rounded-lg flex flex-col justify-between cursor-pointer transition-all hover:bg-indigo-50/50 ${selectedDateStr === dStr ? 'ring-2 ring-indigo-600 bg-indigo-50/30' : 'bg-white'}`;
-                    cell.onclick = () => selectDate(dStr);
-
-                    let indicatorHtml = '';
-                    if(dayLogs.length > 0) {
-                        const totalPages = dayLogs.reduce((s, l) => s + Number(l.pages), 0);
-                        indicatorHtml = `<div class="bg-indigo-100 text-indigo-700 text-[9px] px-1 rounded truncate font-medium">${totalPages}쪽 읽음</div>`;
-                    }
-
-                    cell.innerHTML = `
-                        <span class="text-[11px] font-bold ${selectedDateStr === dStr ? 'text-indigo-600' : 'text-slate-700'}">${day}</span>
-                        ${indicatorHtml}
-                    `;
-                    grid.appendChild(cell);
-                }
-            } else {
-                const startOfWeek = new Date(currentDate);
-                const dayOfWeek = startOfWeek.getDay();
-                startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
-
-                titleElem.innerText = `${startOfWeek.getMonth() + 1}/${startOfWeek.getDate()} 주간`;
-
-                for(let i = 0; i < 7; i++) {
-                    const targetDate = new Date(startOfWeek);
-                    targetDate.setDate(targetDate.getDate() + i);
-                    const dStr = getFormattedDate(targetDate);
-                    const dayLogs = logs.filter(l => l.date === dStr);
-
-                    const cell = document.createElement('div');
-                    cell.className = `h-16 p-1 border border-slate-100 rounded-lg flex flex-col justify-between cursor-pointer transition-all hover:bg-indigo-50/50 ${selectedDateStr === dStr ? 'ring-2 ring-indigo-600 bg-indigo-50/30' : 'bg-white'}`;
-                    cell.onclick = () => selectDate(dStr);
-
-                    let indicatorHtml = '';
-                    if(dayLogs.length > 0) {
-                        const totalPages = dayLogs.reduce((s, l) => s + Number(l.pages), 0);
-                        indicatorHtml = `<div class="bg-indigo-100 text-indigo-700 text-[9px] px-1 rounded truncate font-medium">${totalPages}쪽</div>`;
-                    }
-
-                    cell.innerHTML = `
-                        <span class="text-[11px] font-bold ${selectedDateStr === dStr ? 'text-indigo-600' : 'text-slate-700'}">${targetDate.getDate()}일</span>
-                        ${indicatorHtml}
-                    `;
-                    grid.appendChild(cell);
-                }
-            }
-        }
-
-        function selectDate(dStr) {
-            selectedDateStr = dStr;
-            renderCalendar();
-
-            document.getElementById('selectedDateTitle').innerText = `${dStr} 독서 기록`;
-            const container = document.getElementById('selectedDateLogs');
+        function renderDetailRecords(bookId) {
+            const container = document.getElementById('detailRecordList');
             container.innerHTML = '';
 
-            const dateLogs = logs.filter(l => l.date === dStr);
-            if(dateLogs.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">해당 날짜에 기록된 독서 내용이 없습니다.</p>`;
+            const bookRecords = records.filter(r => r.bookId === bookId).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            if(bookRecords.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400">작성된 독서 기록이 없습니다.</p>`;
                 return;
             }
 
-            dateLogs.forEach(log => {
-                const book = books.find(b => b.id === log.bookId);
-                const bookTitle = book ? book.title : '삭제된 도서';
-
+            bookRecords.forEach(r => {
                 const item = document.createElement('div');
-                item.className = "bg-white border border-slate-100 p-2.5 rounded-xl flex items-center justify-between shadow-sm";
+                item.className = "flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-xs";
                 item.innerHTML = `
-                    <div class="space-y-0.5">
-                        <h4 class="text-xs font-bold text-slate-800">${escapeHtml(bookTitle)} <span class="text-indigo-600 font-semibold">${log.startPage}~${log.endPage}쪽 (${log.pages}쪽)</span></h4>
-                        ${log.memo ? `<p class="text-[11px] text-slate-500 italic">"${escapeHtml(log.memo)}"</p>` : ''}
+                    <div>
+                        <span class="font-bold text-gray-700">${r.date}</span> (${r.startPage}~${r.endPage}p) : <strong class="text-indigo-600">+${r.pages}p</strong>
+                        ${r.memo ? `<br><span class="text-gray-400">${r.memo}</span>` : ''}
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="openLogModalForEdit('${log.id}')" class="text-indigo-500 hover:text-indigo-700 text-xs px-2 py-1"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteLog('${log.id}')" class="text-rose-400 hover:text-rose-600 text-xs px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>
+                    <div class="flex space-x-1">
+                        <button onclick="openRecordModalForEdit('${r.id}')" class="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-600">수정</button>
+                        <button onclick="deleteRecord('${r.id}')" class="px-2 py-1 bg-white border border-red-200 rounded-lg text-red-500">삭제</button>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
 
-        function openLogModal() {
-            if(books.length === 0) {
-                alert('먼저 등록된 책이 있어야 독서량을 기록할 수 있습니다!');
+        function updateBookDetail() {
+            const id = document.getElementById('detailBookId').value;
+            const book = books.find(b => b.id === id);
+            if(book) {
+                book.title = document.getElementById('detailTitleInput').value;
+                book.author = document.getElementById('detailAuthorInput').value;
+                book.status = document.getElementById('detailStatusInput').value;
+                saveData();
+                alert('수정되었습니다.');
+                switchView('list');
+            }
+        }
+
+        // 도서 등록 모달
+        function openBookModal() {
+            document.getElementById('bookModalTitle').innerText = '새 도서 등록';
+            document.getElementById('bookTitleInput').value = '';
+            document.getElementById('bookAuthorInput').value = '';
+            document.getElementById('bookStatusInput').value = 'reading';
+            document.getElementById('bookModal').classList.remove('hidden');
+        }
+        function closeBookModal() {
+            document.getElementById('bookModal').classList.add('hidden');
+        }
+        function saveBook() {
+            const title = document.getElementById('bookTitleInput').value;
+            const author = document.getElementById('bookAuthorInput').value;
+            const status = document.getElementById('bookStatusInput').value;
+
+            if(!title) {
+                alert('책 제목을 입력해주세요.');
                 return;
             }
-            document.getElementById('logEditId').value = '';
-            document.getElementById('logModal').classList.remove('hidden');
-            document.getElementById('logDateInput').value = selectedDateStr;
-            
-            const select = document.getElementById('logBookSelect');
+
+            const newBook = {
+                id: 'b_' + Date.now(),
+                title, author, status
+            };
+            books.push(newBook);
+            saveData();
+            closeBookModal();
+            renderBookList();
+        }
+
+        // 독서 기록 모달 (시작/끝 페이지 자동 계산 및 날짜 필드 정렬 보정 완료)
+        function openRecordModal() {
+            const select = document.getElementById('recordBookSelect');
             select.innerHTML = '';
-            books.forEach(b => {
+
+            // '읽는 중'인 도서만 필터링
+            const readingBooks = books.filter(b => b.status === 'reading');
+            if(readingBooks.length === 0) {
+                alert('기록을 추가할 수 있는 "읽는 중"인 책이 없습니다. 책을 먼저 등록해주세요.');
+                return;
+            }
+
+            readingBooks.forEach(b => {
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.innerText = b.title;
                 select.appendChild(opt);
             });
-            document.getElementById('logStartPageInput').value = '';
-            document.getElementById('logEndPageInput').value = '';
-            document.getElementById('logMemoInput').value = '';
-            document.getElementById('calculatedPagesDisplay').innerText = '0쪽';
+
+            document.getElementById('editRecordId').value = '';
+            document.getElementById('recordDateInput').value = new Date().toISOString().split('T')[0];
+            document.getElementById('recordStartPageInput').value = '';
+            document.getElementById('recordEndPageInput').value = '';
+            document.getElementById('calculatedPages').innerText = '0';
+            document.getElementById('recordMemoInput').value = '';
+            document.getElementById('recordModalTitle').innerText = '독서 기록 추가';
+            document.getElementById('recordModal').classList.remove('hidden');
         }
 
-        function openLogModalForEdit(logId) {
-            const log = logs.find(l => l.id === logId);
-            if(!log) return;
+        function openRecordModalForEdit(recordId) {
+            const record = records.find(r => r.id === recordId);
+            if(!record) return;
 
-            document.getElementById('logEditId').value = log.id;
-            document.getElementById('logModal').classList.remove('hidden');
-            document.getElementById('logDateInput').value = log.date;
-
-            const select = document.getElementById('logBookSelect');
+            const select = document.getElementById('recordBookSelect');
             select.innerHTML = '';
             books.forEach(b => {
                 const opt = document.createElement('option');
                 opt.value = b.id;
                 opt.innerText = b.title;
-                if(b.id === log.bookId) opt.selected = true;
+                if(b.id === record.bookId) opt.selected = true;
                 select.appendChild(opt);
             });
 
-            document.getElementById('logStartPageInput').value = log.startPage;
-            document.getElementById('logEndPageInput').value = log.endPage;
-            document.getElementById('logMemoInput').value = log.memo || '';
-            calculatePages();
+            document.getElementById('editRecordId').value = record.id;
+            document.getElementById('recordDateInput').value = record.date;
+            document.getElementById('recordStartPageInput').value = record.startPage;
+            document.getElementById('recordEndPageInput').value = record.endPage;
+            document.getElementById('calculatedPages').innerText = record.pages;
+            document.getElementById('recordMemoInput').value = record.memo || '';
+            document.getElementById('recordModalTitle').innerText = '독서 기록 수정';
+            document.getElementById('recordModal').classList.remove('hidden');
         }
 
-        function closeLogModal() {
-            document.getElementById('logModal').classList.add('hidden');
+        function closeRecordModal() {
+            document.getElementById('recordModal').classList.add('hidden');
         }
 
         function calculatePages() {
-            const start = Number(document.getElementById('logStartPageInput').value);
-            const end = Number(document.getElementById('logEndPageInput').value);
-            const display = document.getElementById('calculatedPagesDisplay');
-
-            if(start && end && end >= start) {
-                const pages = (end - start) + 1;
-                display.innerText = `${pages}쪽`;
-            } else {
-                display.innerText = `0쪽`;
+            const start = parseInt(document.getElementById('recordStartPageInput').value) || 0;
+            const end = parseInt(document.getElementById('recordEndPageInput').value) || 0;
+            let diff = 0;
+            if(end >= start) {
+                diff = end - start + 1;
             }
+            document.getElementById('calculatedPages').innerText = diff;
         }
 
-        function handleLogSubmit(e) {
-            e.preventDefault();
-            const editId = document.getElementById('logEditId').value;
-            const date = document.getElementById('logDateInput').value;
-            const bookId = document.getElementById('logBookSelect').value;
-            const startPage = Number(document.getElementById('logStartPageInput').value);
-            const endPage = Number(document.getElementById('logEndPageInput').value);
-            const memo = document.getElementById('logMemoInput').value.trim();
+        function saveRecord() {
+            const recordId = document.getElementById('editRecordId').value;
+            const bookId = document.getElementById('recordBookSelect').value;
+            const date = document.getElementById('recordDateInput').value;
+            const startPage = parseInt(document.getElementById('recordStartPageInput').value) || 0;
+            const endPage = parseInt(document.getElementById('recordEndPageInput').value) || 0;
+            const memo = document.getElementById('recordMemoInput').value;
 
-            if(endPage < startPage) {
-                alert('끝 페이지는 시작 페이지보다 크거나 같아야 합니다.');
+            if(!date || endPage < startPage) {
+                alert('날짜와 올바른 페이지 범위를 입력해주세요.');
                 return;
             }
 
-            const pages = (endPage - startPage) + 1;
+            const pages = endPage - startPage + 1;
 
-            if(editId) {
-                const log = logs.find(l => l.id === editId);
-                if(log) {
-                    log.date = date;
-                    log.bookId = bookId;
-                    log.startPage = startPage;
-                    log.endPage = endPage;
-                    log.pages = pages;
-                    log.memo = memo;
+            if(recordId) {
+                const record = records.find(r => r.id === recordId);
+                if(record) {
+                    record.bookId = bookId;
+                    record.date = date;
+                    record.startPage = startPage;
+                    record.endPage = endPage;
+                    record.pages = pages;
+                    record.memo = memo;
                 }
             } else {
-                const newLog = {
-                    id: Date.now().toString(),
-                    date,
-                    bookId,
-                    startPage,
-                    endPage,
-                    pages,
-                    memo
+                const newRecord = {
+                    id: 'r_' + Date.now(),
+                    bookId, date, startPage, endPage, pages, memo
                 };
-                logs.push(newLog);
+                records.push(newRecord);
             }
 
             saveData();
-            closeLogModal();
-            renderCalendar();
-            selectDate(date);
-
-            const detailView = document.getElementById('bookDetailView');
-            if(!detailView.classList.contains('hidden')) {
-                renderBookDetailLogs(bookId);
-            }
-        }
-
-        function deleteLog(id) {
-            if(confirm('이 기록을 삭제하시겠습니까?')) {
-                logs = logs.filter(l => l.id !== id);
-                saveData();
+            closeRecordModal();
+            if(currentView === 'detail') {
+                renderDetailRecords(bookId);
+            } else if(currentView === 'calendar') {
                 renderCalendar();
-                selectDate(selectedDateStr);
+            } else {
+                renderBookList();
             }
         }
 
-        function exportToCSV() {
-            if(logs.length === 0 && books.length === 0) {
-                alert('내보낼 데이터가 없습니다.');
+        function deleteRecord(recordId) {
+            if(confirm('기록을 삭제하시겠습니까?')) {
+                const record = records.find(r => r.id === recordId);
+                const bookId = record ? record.bookId : null;
+                records = records.filter(r => r.id !== recordId);
+                saveData();
+                if(currentView === 'detail' && bookId) {
+                    renderDetailRecords(bookId);
+                } else {
+                    renderCalendar();
+                }
+            }
+        }
+
+        // 캘린더 렌더링
+        function changeMonth(diff) {
+            currentDate.setMonth(currentDate.getMonth() + diff);
+            renderCalendar();
+        }
+
+        function setCalendarMode(mode) {
+            calendarMode = mode;
+            document.getElementById('modeMonthBtn').className = mode === 'month' ? "text-xs px-2.5 py-1 rounded-md font-medium bg-white text-indigo-600 shadow-sm" : "text-xs px-2.5 py-1 rounded-md font-medium text-gray-600";
+            document.getElementById('modeWeekBtn').className = mode === 'week' ? "text-xs px-2.5 py-1 rounded-md font-medium bg-white text-indigo-600 shadow-sm" : "text-xs px-2.5 py-1 rounded-md font-medium text-gray-600";
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calendarTitle').innerText = `${year}년 ${month + 1}월`;
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const headerRow = document.createElement('div');
+            headerRow.className = "grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-400 mb-2";
+            ['일', '월', '화', '수', '목', '금', '토'].forEach(d => {
+                headerRow.innerHTML += `<div>${d}</div>`;
+            });
+            grid.appendChild(headerRow);
+
+            const daysContainer = document.createElement('div');
+            daysContainer.className = "grid grid-cols-7 gap-1";
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            for(let i=0; i<firstDay; i++) {
+                daysContainer.innerHTML += `<div></div>`;
+            }
+
+            for(let d=1; d<=lastDate; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayRecords = records.filter(r => r.date === dateStr);
+                const hasRecord = dayRecords.length > 0;
+
+                const cell = document.createElement('div');
+                cell.className = `h-14 border rounded-xl p-1 flex flex-col justify-between cursor-pointer transition ${hasRecord ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`;
+                cell.onclick = () => selectDate(dateStr);
+
+                let content = `<span class="text-xs font-bold ${hasRecord ? 'text-indigo-600' : 'text-gray-600'}">${d}</span>`;
+                if(hasRecord) {
+                    const firstBook = books.find(b => b.id === dayRecords[0].bookId);
+                    content += `<span class="text-[9px] text-indigo-700 truncate">${firstBook ? firstBook.title : ''}</span>`;
+                }
+                cell.innerHTML = content;
+                daysContainer.appendChild(cell);
+            }
+
+            grid.appendChild(daysContainer);
+            selectDate(`${year}-${String(month+1).padStart(2, '0')}-01`);
+        }
+
+        function selectDate(dateStr) {
+            document.getElementById('selectedDateTitle').innerText = `${dateStr} 독서 기록`;
+            const container = document.getElementById('selectedDateLogs');
+            container.innerHTML = '';
+
+            const dayRecords = records.filter(r => r.date === dateStr);
+            if(dayRecords.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400">이 날의 기록이 없습니다.</p>`;
                 return;
             }
 
-            let csvContent = "\uFEFF";
-            csvContent += "날짜,책제목,저자,읽은상태,시작페이지,끝페이지,읽은페이지수,메모\n";
+            dayRecords.forEach(r => {
+                const book = books.find(b => b.id === r.bookId);
+                const item = document.createElement('div');
+                item.className = "bg-gray-50 p-2.5 rounded-xl text-xs flex justify-between items-center";
+                item.innerHTML = `
+                    <div>
+                        <strong class="text-gray-800">${book ? book.title : '삭제된 책'}</strong> (${r.startPage}~${r.endPage}p) : <span class="text-indigo-600">+${r.pages}p</span>
+                        ${r.memo ? `<br><span class="text-gray-400">${r.memo}</span>` : ''}
+                    </div>
+                    <button onclick="deleteRecord('${r.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash text-xs"></i></button>
+                `;
+                container.appendChild(item);
+            });
+        }
 
-            logs.forEach(log => {
-                const book = books.find(b => b.id === log.bookId);
-                const title = book ? `"${book.title.replace(/"/g, '""')}"` : '"삭제된 도서"';
-                const author = book ? `"${book.author.replace(/"/g, '""')}"` : '""';
-                const status = book ? (book.status === 'reading' ? '"읽는 중"' : '"완독"') : '""';
-                const memo = `"${(log.memo || '').replace(/"/g, '""')}"`;
-
-                csvContent += `${log.date},${title},${author},${status},${log.startPage},${log.endPage},${log.pages},${memo}\n`;
+        // CSV 백업 기능
+        function exportCSV() {
+            let csvContent = "\uFEFF날짜,책제목,저자,시작페이지,끝페이지,읽은페이지수,메모\n";
+            records.forEach(r => {
+                const book = books.find(b => b.id === r.bookId);
+                const title = book ? `"${book.title}"` : '"알 수 없음"';
+                const author = book ? `"${book.author}"` : '"알 수 없음"';
+                csvContent += `${r.date},${title},${author},${r.startPage},${r.endPage},${r.pages},"${r.memo || ''}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `reading_records_${getFormattedDate(new Date())}.csv`;
-            document.body.appendChild(a);
+            a.download = `독서기록_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
 
-        function escapeHtml(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
+        // 초기 실행
+        renderBookList();
     </script>
 </body>
 </html>
