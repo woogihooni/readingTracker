@@ -49,12 +49,12 @@
         <!-- [뷰 2] 캘린더 뷰 -->
         <div id="calendarView" class="hidden space-y-4">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                <!-- 월/주간 전환 및 월 이동 -->
+                <!-- 월/주간 전환 및 이동 -->
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-2">
-                        <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                        <button onclick="changeCalendarPeriod(-1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-left text-sm"></i></button>
                         <h2 id="calendarTitle" class="text-lg font-bold text-gray-800">2026년 10월</h2>
-                        <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+                        <button onclick="changeCalendarPeriod(1)" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-chevron-right text-sm"></i></button>
                     </div>
                     <div class="flex bg-gray-100 p-1 rounded-lg">
                         <button onclick="setCalendarMode('month')" id="modeMonthBtn" class="text-sm px-3 py-1 rounded-md font-medium bg-white text-indigo-600 shadow-sm">월간</button>
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- [모달] 독서 기록 추가/수정 (아이폰 14 레이아웃 오버플로우 방지 보정 완료) -->
+    <!-- [모달] 독서 기록 추가/수정 -->
     <div id="recordModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4 box-border max-h-[90vh] overflow-y-auto">
             <h3 id="recordModalTitle" class="text-lg font-bold text-gray-800">독서 기록 추가</h3>
@@ -200,6 +200,7 @@
         let currentView = 'list';
         let calendarMode = 'month';
         let currentDate = new Date();
+        let selectedDateStr = new Date().toISOString().split('T')[0];
 
         function saveData() {
             localStorage.setItem('reading_books', JSON.stringify(books));
@@ -392,7 +393,6 @@
             const select = document.getElementById('recordBookSelect');
             select.innerHTML = '';
 
-            // 정확한 'reading' 상태 도서만 필터링
             const readingBooks = books.filter(b => b.status === 'reading');
             if(readingBooks.length === 0) {
                 alert('기록을 추가할 수 있는 "읽는 중"인 책이 없습니다. 책을 먼저 등록해주세요.');
@@ -407,7 +407,7 @@
             });
 
             document.getElementById('editRecordId').value = '';
-            document.getElementById('recordDateInput').value = new Date().toISOString().split('T')[0];
+            document.getElementById('recordDateInput').value = selectedDateStr;
             document.getElementById('recordStartPageInput').value = '';
             document.getElementById('recordEndPageInput').value = '';
             document.getElementById('calculatedPages').innerText = '0';
@@ -422,7 +422,6 @@
 
             const select = document.getElementById('recordBookSelect');
             select.innerHTML = '';
-            // 수정 시에는 현재 기록에 연결된 책뿐만 아니라 다른 '읽는 중'인 책도 선택 가능하도록 포함
             books.filter(b => b.status === 'reading' || b.id === record.bookId).forEach(b => {
                 const opt = document.createElement('option');
                 opt.value = b.id;
@@ -492,10 +491,8 @@
             closeRecordModal();
             if(currentView === 'detail') {
                 renderDetailRecords(bookId);
-            } else if(currentView === 'calendar') {
-                renderCalendar();
             } else {
-                renderBookList();
+                renderCalendar();
             }
         }
 
@@ -513,8 +510,12 @@
             }
         }
 
-        function changeMonth(diff) {
-            currentDate.setMonth(currentDate.getMonth() + diff);
+        function changeCalendarPeriod(diff) {
+            if(calendarMode === 'month') {
+                currentDate.setMonth(currentDate.getMonth() + diff);
+            } else {
+                currentDate.setDate(currentDate.getDate() + (diff * 7));
+            }
             renderCalendar();
         }
 
@@ -526,10 +527,6 @@
         }
 
         function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            document.getElementById('calendarTitle').innerText = `${year}년 ${month + 1}월`;
-
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
@@ -543,36 +540,71 @@
             const daysContainer = document.createElement('div');
             daysContainer.className = "grid grid-cols-7 gap-1";
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
+            if(calendarMode === 'month') {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                document.getElementById('calendarTitle').innerText = `${year}년 ${month + 1}월`;
 
-            for(let i=0; i<firstDay; i++) {
-                daysContainer.innerHTML += `<div></div>`;
-            }
+                const firstDay = new Date(year, month, 1).getDay();
+                const lastDate = new Date(year, month + 1, 0).getDate();
 
-            for(let d=1; d<=lastDate; d++) {
-                const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayRecords = records.filter(r => r.date === dateStr);
-                const hasRecord = dayRecords.length > 0;
-
-                const cell = document.createElement('div');
-                cell.className = `h-16 border rounded-xl p-1 flex flex-col justify-between cursor-pointer transition ${hasRecord ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`;
-                cell.onclick = () => selectDate(dateStr);
-
-                let content = `<span class="text-sm font-bold ${hasRecord ? 'text-indigo-600' : 'text-gray-600'}">${d}</span>`;
-                if(hasRecord) {
-                    const firstBook = books.find(b => b.id === dayRecords[0].bookId);
-                    content += `<span class="text-[10px] text-indigo-700 truncate">${firstBook ? firstBook.title : ''}</span>`;
+                for(let i=0; i<firstDay; i++) {
+                    daysContainer.innerHTML += `<div></div>`;
                 }
-                cell.innerHTML = content;
-                daysContainer.appendChild(cell);
+
+                for(let d=1; d<=lastDate; d++) {
+                    const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    appendDayCell(daysContainer, dateStr, d);
+                }
+            } else {
+                // 주간 모드 계산
+                const startOfWeek = new Date(currentDate);
+                const dayOfWeek = startOfWeek.getDay();
+                startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+                document.getElementById('calendarTitle').innerText = `${startOfWeek.getMonth()+1}/${startOfWeek.getDate()} ~ ${endOfWeek.getMonth()+1}/${endOfWeek.getDate()}`;
+
+                for(let i=0; i<7; i++) {
+                    const loopDate = new Date(startOfWeek);
+                    loopDate.setDate(loopDate.getDate() + i);
+                    const year = loopDate.getFullYear();
+                    const month = loopDate.getMonth() + 1;
+                    const day = loopDate.getDate();
+                    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    appendDayCell(daysContainer, dateStr, day);
+                }
             }
 
             grid.appendChild(daysContainer);
-            selectDate(`${year}-${String(month+1).padStart(2, '0')}-01`);
+            selectDate(selectedDateStr);
+        }
+
+        function appendDayCell(container, dateStr, displayNum) {
+            const dayRecords = records.filter(r => r.date === dateStr);
+            const hasRecord = dayRecords.length > 0;
+            const isSelected = selectedDateStr === dateStr;
+
+            const cell = document.createElement('div');
+            cell.className = `h-16 border rounded-xl p-1 flex flex-col justify-between cursor-pointer transition ${isSelected ? 'ring-2 ring-indigo-500' : ''} ${hasRecord ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`;
+            cell.onclick = () => {
+                selectedDateStr = dateStr;
+                renderCalendar();
+            };
+
+            let content = `<span class="text-sm font-bold ${hasRecord ? 'text-indigo-600' : 'text-gray-600'}">${displayNum}</span>`;
+            if(hasRecord) {
+                const firstBook = books.find(b => b.id === dayRecords[0].bookId);
+                content += `<span class="text-[10px] text-indigo-700 truncate">${firstBook ? firstBook.title : ''}</span>`;
+            }
+            cell.innerHTML = content;
+            container.appendChild(cell);
         }
 
         function selectDate(dateStr) {
+            selectedDateStr = dateStr;
             document.getElementById('selectedDateTitle').innerText = `${dateStr} 독서 기록`;
             const container = document.getElementById('selectedDateLogs');
             container.innerHTML = '';
@@ -592,7 +624,10 @@
                         <strong class="text-gray-800">${book ? book.title : '삭제된 책'}</strong> (${r.startPage}~${r.endPage}p) : <span class="text-indigo-600">+${r.pages}p</span>
                         ${r.memo ? `<br><span class="text-gray-400">${r.memo}</span>` : ''}
                     </div>
-                    <button onclick="deleteRecord('${r.id}')" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <div class="flex space-x-1">
+                        <button onclick="openRecordModalForEdit('${r.id}')" class="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm">수정</button>
+                        <button onclick="deleteRecord('${r.id}')" class="px-2.5 py-1.5 bg-white border border-red-200 rounded-lg text-red-500 text-sm">삭제</button>
+                    </div>
                 `;
                 container.appendChild(item);
             });
