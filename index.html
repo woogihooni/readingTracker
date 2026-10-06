@@ -33,11 +33,16 @@
 
         <!-- [뷰 1] 도서 및 기록 목록 -->
         <div id="listView" class="space-y-4">
-            <!-- 상태 필터 -->
-            <div class="flex space-x-2 border-b border-gray-200 pb-2">
-                <button onclick="filterBooks('all')" id="filterAll" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-indigo-600 text-white">전체</button>
-                <button onclick="filterBooks('reading')" id="filterReading" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">읽는 중</button>
-                <button onclick="filterBooks('completed')" id="filterCompleted" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">완독</button>
+            <!-- 상태 필터 및 도서 추가 버튼 -->
+            <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                <div class="flex space-x-2">
+                    <button onclick="filterBooks('all')" id="filterAll" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-indigo-600 text-white">전체</button>
+                    <button onclick="filterBooks('reading')" id="filterReading" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">읽는 중</button>
+                    <button onclick="filterBooks('completed')" id="filterCompleted" class="text-sm px-3.5 py-1.5 rounded-full font-medium bg-gray-200 text-gray-600">완독</button>
+                </div>
+                <button onclick="openBookModal()" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-indigo-200 active:bg-indigo-100 flex items-center">
+                    <i class="fa-solid fa-plus mr-1"></i>도서 추가
+                </button>
             </div>
 
             <!-- 도서 카드 리스트 -->
