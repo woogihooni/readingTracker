@@ -742,19 +742,25 @@
                     }
                     row.push(currentVal);
 
-                    // 포맷 변경에 따른 열 개수 대응 (새 포맷: 8개 이상, 구 포맷: 7개)
+                    // 백업 포맷 컬럼 순서: [0]날짜, [1]책제목, [2]저자, [3]도서상태, [4]시작페이지, [5]끝페이지, [6]읽은페이지수, [7]메모
                     if (row.length >= 7) {
                         const date = row[0].trim();
                         const title = row[1].replace(/^"|"$/g, '').trim();
                         const author = row[2].replace(/^"|"$/g, '').trim();
                         
-                        // 새 포맷(도서상태 포함)과 구 포맷 호환 처리
                         let status = 'reading';
-                        let startPageIdx = 3;
+                        let startPageIdx = 4;
 
-                        if (row.length >= 8 && (row[3].trim() === 'reading' || row[3].trim() === 'completed')) {
-                            status = row[3].trim();
+                        // 새 포맷(도서상태 포함)인 경우
+                        if (row.length >= 8) {
+                            const rawStatus = row[3].trim().toLowerCase();
+                            if (rawStatus === 'completed' || rawStatus === '완독') {
+                                status = 'completed';
+                            }
                             startPageIdx = 4;
+                        } else {
+                            // 구 포맷(도서상태 없음) 호환 처리
+                            startPageIdx = 3;
                         }
 
                         const startPage = parseInt(row[startPageIdx]) || 0;
@@ -776,7 +782,7 @@
                             books.push(book);
                             importedBooksCount++;
                         } else {
-                            // 이미 있는 책이라도 가져오는 파일에서 'completed'(완독) 상태라면 완독으로 업데이트
+                            // 이미 존재하는 도서라도 파일에서 'completed' 상태라면 완독으로 업데이트
                             if (status === 'completed') {
                                 book.status = 'completed';
                             }
