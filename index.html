@@ -17,8 +17,12 @@
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-book-open mr-2"></i>독서 기록장</h1>
         <div class="flex items-center space-x-2">
             <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-emerald-200 active:bg-emerald-100">
-                <i class="fa-solid fa-file-csv mr-1"></i>CSV 백업
+                <i class="fa-solid fa-file-csv mr-1"></i>백업
             </button>
+            <label class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-indigo-200 active:bg-indigo-100 cursor-pointer">
+                <i class="fa-solid fa-file-arrow-up mr-1"></i>가져오기
+                <input type="file" id="csvFileInput" accept=".csv" onchange="importCSV(event)" class="hidden">
+            </label>
         </div>
     </header>
 
@@ -96,17 +100,17 @@
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-xl space-y-4">
             <h3 id="bookModalTitle" class="text-lg font-bold text-gray-800">새 도서 등록</h3>
             <input type="hidden" id="editBookId">
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">책 제목</label>
-                <input type="text" id="bookTitleInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 어린왕자">
+                <input type="text" id="bookTitleInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 어린왕자">
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">저자</label>
-                <input type="text" id="bookAuthorInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 생텍쥐페리">
+                <input type="text" id="bookAuthorInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예: 생텍쥐페리">
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">독서 상태</label>
-                <select id="bookStatusInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <select id="bookStatusInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                     <option value="reading">읽는 중</option>
                     <option value="completed">완독</option>
                 </select>
@@ -146,9 +150,9 @@
             <div class="bg-indigo-50 p-2.5 rounded-xl text-center">
                 <span class="text-sm text-indigo-600 font-medium">총 읽은 페이지: <strong id="calculatedPages" class="text-base font-bold">0</strong> 페이지</span>
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">메모 (선택)</label>
-                <input type="text" id="recordMemoInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="간단한 소감이나 메모">
+                <input type="text" id="recordMemoInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="간단한 소감이나 메모">
             </div>
             <div class="flex space-x-2 pt-2">
                 <button onclick="closeRecordModal()" class="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-base font-semibold">취소</button>
@@ -163,17 +167,17 @@
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
             <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-book mr-2 text-indigo-500"></i>도서 정보 상세 및 수정</h3>
             <input type="hidden" id="detailBookId">
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">책 제목</label>
-                <input type="text" id="detailTitleInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="detailTitleInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">저자</label>
-                <input type="text" id="detailAuthorInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="detailAuthorInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <div>
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-gray-600 mb-1">독서 상태</label>
-                <select id="detailStatusInput" class="w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <select id="detailStatusInput" class="w-full max-w-full box-border border border-gray-200 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                     <option value="reading">읽는 중</option>
                     <option value="completed">완독</option>
                 </select>
@@ -702,6 +706,93 @@
             a.href = url;
             a.download = `독서기록_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
+        }
+
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                
+                let importedBooksCount = 0;
+                let importedRecordsCount = 0;
+
+                // 첫 줄(헤더)은 건너뛰고 1부터 시작
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    // CSV 파싱 (따옴표 안에 쉼표가 포함된 경우 처리)
+                    const row = [];
+                    let inQuotes = false;
+                    let currentVal = '';
+                    for (let char of line) {
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            row.push(currentVal);
+                            currentVal = '';
+                        } else {
+                            currentVal += char;
+                        }
+                    }
+                    row.push(currentVal);
+
+                    if (row.length >= 6) {
+                        const date = row[0].trim();
+                        const title = row[1].replace(/^"|"$/g, '').trim();
+                        const author = row[2].replace(/^"|"$/g, '').trim();
+                        const startPage = parseInt(row[3]) || 0;
+                        const endPage = parseInt(row[4]) || 0;
+                        const pages = parseInt(row[5]) || (endPage - startPage + 1);
+                        const memo = row[6] ? row[6].replace(/^"|"$/g, '').trim() : '';
+
+                        if (!date || !title) continue;
+
+                        // 1. 도서 존재 여부 확인 (없으면 새로 등록)
+                        let book = books.find(b => b.title === title);
+                        if (!book) {
+                            book = {
+                                id: 'b_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                                title: title,
+                                author: author || '미상',
+                                status: 'reading' // 기본값
+                            };
+                            books.push(book);
+                            importedBooksCount++;
+                        }
+
+                        // 2. 동일한 기록이 이미 존재하는지 확인 (날짜, 책ID, 시작/끝페이지 기준 중복 방지)
+                        const exists = records.some(r => r.bookId === book.id && r.date === date && r.startPage === startPage && r.endPage === endPage);
+                        if (!exists) {
+                            const newRecord = {
+                                id: 'r_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                                bookId: book.id,
+                                date: date,
+                                startPage: startPage,
+                                endPage: endPage,
+                                pages: pages > 0 ? pages : (endPage - startPage + 1),
+                                memo: memo
+                            };
+                            records.push(newRecord);
+                            importedRecordsCount++;
+                        }
+                    }
+                }
+
+                saveData();
+                renderBookList();
+                if(currentView === 'calendar') renderCalendar();
+
+                // 파일 input 초기화 (동일한 파일 재선택 가능하도록)
+                event.target.value = '';
+
+                alert(`가져오기 완료!\n- 새 도서: ${importedBooksCount}권\n- 새 독서 기록: ${importedRecordsCount}건이 추가되었습니다.`);
+            };
+            reader.readAsText(file, 'UTF-8');
         }
 
         renderBookList();
