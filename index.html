@@ -692,12 +692,13 @@
         }
 
         function exportCSV() {
-            let csvContent = "\uFEFF날짜,책제목,저자,시작페이지,끝페이지,읽은페이지수,메모\n";
+            let csvContent = "\uFEFF날짜,책제목,저자,도서상태,시작페이지,끝페이지,읽은페이지수,메모\n";
             records.forEach(r => {
                 const book = books.find(b => b.id === r.bookId);
                 const title = book ? `"${book.title}"` : '"알 수 없음"';
                 const author = book ? `"${book.author}"` : '"알 수 없음"';
-                csvContent += `${r.date},${title},${author},${r.startPage},${r.endPage},${r.pages},"${r.memo || ''}"\n`;
+                const status = book ? book.status : 'reading';
+                csvContent += `${r.date},${title},${author},${status},${r.startPage},${r.endPage},${r.pages},"${r.memo || ''}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -741,28 +742,44 @@
                     }
                     row.push(currentVal);
 
-                    if (row.length >= 6) {
+                    // 포맷 변경에 따른 열 개수 대응 (새 포맷: 8개 이상, 구 포맷: 7개)
+                    if (row.length >= 7) {
                         const date = row[0].trim();
                         const title = row[1].replace(/^"|"$/g, '').trim();
                         const author = row[2].replace(/^"|"$/g, '').trim();
-                        const startPage = parseInt(row[3]) || 0;
-                        const endPage = parseInt(row[4]) || 0;
-                        const pages = parseInt(row[5]) || (endPage - startPage + 1);
-                        const memo = row[6] ? row[6].replace(/^"|"$/g, '').trim() : '';
+                        
+                        // 새 포맷(도서상태 포함)과 구 포맷 호환 처리
+                        let status = 'reading';
+                        let startPageIdx = 3;
+
+                        if (row.length >= 8 && (row[3].trim() === 'reading' || row[3].trim() === 'completed')) {
+                            status = row[3].trim();
+                            startPageIdx = 4;
+                        }
+
+                        const startPage = parseInt(row[startPageIdx]) || 0;
+                        const endPage = parseInt(row[startPageIdx + 1]) || 0;
+                        const pages = parseInt(row[startPageIdx + 2]) || (endPage - startPage + 1);
+                        const memo = row[startPageIdx + 3] ? row[startPageIdx + 3].replace(/^"|"$/g, '').trim() : '';
 
                         if (!date || !title) continue;
 
-                        // 1. 도서 존재 여부 확인 (없으면 새로 등록)
+                        // 1. 도서 존재 여부 확인 (없으면 새로 등록, 있으면 상태 최신화)
                         let book = books.find(b => b.title === title);
                         if (!book) {
                             book = {
                                 id: 'b_' + Date.now() + Math.random().toString(36).substr(2, 4),
                                 title: title,
                                 author: author || '미상',
-                                status: 'reading' // 기본값
+                                status: status
                             };
                             books.push(book);
                             importedBooksCount++;
+                        } else {
+                            // 이미 있는 책이라도 가져오는 파일에서 'completed'(완독) 상태라면 완독으로 업데이트
+                            if (status === 'completed') {
+                                book.status = 'completed';
+                            }
                         }
 
                         // 2. 동일한 기록이 이미 존재하는지 확인 (날짜, 책ID, 시작/끝페이지 기준 중복 방지)
